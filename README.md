@@ -15,5 +15,5 @@
 	* show karma for username
 
 ### AUTHOR
-**(c) 2014-2016 Luciano D. Cecere - ldante86@aol.com**
+**(c) 2016 Luciano D. Cecere - ldante86@aol.com**
 

@@ -1,0 +1,88 @@
+#!/bin/bash -
+
+PROGRAM="${0##*/}"
+
+REDDIT_URL="https://www.reddit.com/"
+
+USAGE="
+$PROGRAM -flag parameter
+
+  -h  | --help				show this help and exit
+  -t  | --top-post subreddit		show top post in /r/subreddit
+  -tb | --top-post-browser subreddit	open top post in browser
+  -k  | --karma username		show karma for username
+"
+
+_show_karma()
+{
+	if [ "x$1" = "x" ]; then
+		echo "error: no username entered"
+		exit 1
+	fi
+
+	local reddit_user="user/$1"
+
+	printf "\n%s\n\n" "karma for /${reddit_user}"
+
+	local page=$(lynx -source "$REDDIT_URL${reddit_user}/")
+
+	echo "$page" | grep "page not found" >/dev/null && {
+		echo "/u/${reddit_user} not found"
+		exit 1
+	}
+
+	echo -n "post karma: "
+	echo "$page"| grep -io "<span class=\"karma\">*[0-9,]*" | sed 's/.*>//'
+
+	echo -n "comment karma: "
+	echo "$page"| grep -io "<span class=\"karma comment-karma\">*[0-9,]*" | sed 's/.*>//'
+}
+
+_show_top_post()
+{
+	if [ "x$1" = "x" ]; then
+		echo "error: no subreddit entered"
+		exit 1
+	fi
+
+	local subreddit="$1"
+
+	local chunk=$(lynx -source "${REDDIT_URL}r/${subreddit}/" | grep -Po 'data-rank=\"1\" \K.*(?= data-rank=\"2\")')
+
+	local top_post=$(echo "$chunk" | grep -o "${REDDIT_URL}r/${subreddit}/comments/\S*")
+	top_post="${top_post%%\"}"
+
+	if [ "x$top_post" = "x" ]; then
+		echo "error: no results were found"
+		exit 1
+	fi
+
+	if [ $REQUEST_BROWSER ]; then
+		local browser="firefox"
+		$browser $top_post
+	else
+		echo "Top Post for /r/$subreddit"
+		printf "\n%s\n\n" "${top_post}"
+	fi
+}
+
+
+case "$1" in
+	-tb|--top-post-browser)
+		REQUEST_BROWSER=1
+		shift
+		_show_top_post "$1"
+		;;
+	-t|--top-post)
+		shift
+		_show_top_post "$1"
+		;;
+	-k|--karma)
+		shift
+		_show_karma "$1"
+		;;
+	-h|--help|*)
+		echo "$USAGE"
+		exit 0
+		;;
+esac

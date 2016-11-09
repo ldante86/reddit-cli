@@ -16,6 +16,7 @@
 ### EXAMPLES
 
 **redditcli** -t bash
+
 **redditcli** -k ldante86
 
 ### AUTHOR

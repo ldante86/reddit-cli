@@ -59,7 +59,7 @@ _show_top_post()
 
 	if [ $REQUEST_BROWSER ]; then
 		local browser="firefox"
-		$browser $top_post
+		$browser $top_post &
 	else
 		echo "Top Post for /r/$subreddit"
 		printf "\n%s\n\n" "${top_post}"
